@@ -51,13 +51,76 @@ function App() {
   const lgr = getSelectedLGR();
   const palette = useMemo(() => getLGRPalette(lgr), [lgr]);
 
-  if (!appState.selectedLgr) {
+  const topBar = (
+    <TopBar>
+      <Button
+        style={{
+          padding: "0 16px",
+          textTransform: "uppercase",
+          fontSize: "1rem",
+          fontWeight: 800,
+          color: "rgb(210, 255, 90)",
+        }}
+        onClick={() => {
+          selectLGR("");
+          selectImage("");
+        }}
+      >
+        <span>LGR</span> <span style={{ color: "#fff" }}>Studio</span>
+      </Button>
+      {lgr && (
+        <>
+          <div
+            style={{
+              alignItems: "center",
+              display: "flex",
+              padding: "0 16px",
+            }}
+          >
+            {lgr.name}
+          </div>
+          <Button
+            onClick={() => {
+              const buffer = lgr.data.toBuffer();
+              downloadData(buffer, lgr.name);
+            }}
+            style={{
+              padding: "0 16px",
+            }}
+          >
+            Export LGR
+          </Button>
+          <Button
+            style={{
+              padding: "0 16px",
+            }}
+            onClick={() => {
+              const data = lgr.data.pictureData.map((p) => p.data);
+              const filenames = lgr.data.pictureData.map((p) => p.name);
+              downloadData(data, lgr.name + ".zip", filenames);
+            }}
+          >
+            Export as ZIP
+          </Button>
+        </>
+      )}
+    </TopBar>
+  );
+
+  if (!lgr) {
     return (
-      <Landing loadLGR={loadLGR} appState={appState} selectLGR={selectLGR} />
+      <Main>
+        {topBar}
+        <Content>
+          <Landing
+            loadLGR={loadLGR}
+            appState={appState}
+            selectLGR={selectLGR}
+          />
+        </Content>
+      </Main>
     );
   }
-
-  if (!lgr) return <div>404</div>;
 
   const picture = lgr.data.pictureData.find(
     (p) => p.name === appState.selectedImage
@@ -77,62 +140,10 @@ function App() {
 
   return (
     <Main>
-      <TopBar>
-        <Button
-          style={{
-            padding: "0 16px",
-            textTransform: "uppercase",
-            fontSize: "1rem",
-            fontWeight: 800,
-            color: "rgb(210, 255, 90)",
-          }}
-          onClick={() => {
-            selectLGR("");
-            selectImage("");
-          }}
-        >
-          <span>LGR</span> <span style={{ color: "#fff" }}>Studio</span>
-        </Button>
-        {lgr && (
-          <>
-            <div
-              style={{
-                alignItems: "center",
-                display: "flex",
-                padding: "0 16px",
-              }}
-            >
-              {lgr.name}
-            </div>
-            <Button
-              onClick={() => {
-                const buffer = lgr.data.toBuffer();
-                downloadData(buffer, lgr.name);
-              }}
-              style={{
-                padding: "0 16px",
-              }}
-            >
-              Export LGR
-            </Button>
-            <Button
-              style={{
-                padding: "0 16px",
-              }}
-              onClick={() => {
-                const data = lgr.data.pictureData.map((p) => p.data);
-                const filenames = lgr.data.pictureData.map((p) => p.name);
-                downloadData(data, lgr.name + ".zip", filenames);
-              }}
-            >
-              Export pictures
-            </Button>
-          </>
-        )}
-      </TopBar>
+      {topBar}
       <Content>
         <SideBar>
-          <Panel title="LGR palette" height={300} open>
+          <Panel title="LGR palette" height={300}>
             {palette && <Palette palette={palette}></Palette>}
           </Panel>
           <Panel title="Picture palette" height={300}>

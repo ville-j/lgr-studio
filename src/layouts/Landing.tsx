@@ -44,7 +44,7 @@ const Landing = ({
     <div
       ref={container}
       style={{
-        height: "100%",
+        flex: 1,
         display: "flex",
         overflow: "hidden",
         justifyContent: "center",
