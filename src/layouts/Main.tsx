@@ -44,7 +44,7 @@ export const SideBar = ({ children }: { children?: React.ReactNode }) => (
       overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      background: "#2c2a34",
+      background: "#19181d",
       borderRight: "1px solid #070708",
     }}
   >

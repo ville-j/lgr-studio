@@ -19,7 +19,6 @@ const Panel = ({
         flexDirection: "column",
         overflow: "hidden",
         minHeight: 36 + (isOpen ? height ?? 0 : 0),
-        borderBottom: "1px solid #070708",
       }}
     >
       <div
@@ -31,6 +30,7 @@ const Panel = ({
           background: "#151418",
           color: "#d3d3d3",
           display: "flex",
+          borderBottom: "1px solid #070708",
         }}
         onClick={() => {
           setIsOpen((val) => !val);

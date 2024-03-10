@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
       manifest: {
         name: "LGR Studio",
         short_name: "LGR Studio",

@@ -6,6 +6,9 @@ import Button from "./Button";
 
 const ToolBar = styled.div`
   display: flex;
+  height: 36px;
+  border-bottom: 1px solid #070708;
+  box-sizing: border-box;
   background: #151418;
   > * {
     padding: 8px;
