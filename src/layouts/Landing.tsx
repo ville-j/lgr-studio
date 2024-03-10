@@ -4,6 +4,18 @@ import { Buffer } from "buffer/";
 import { useRef } from "react";
 import { AppState, LGRFile } from "../types";
 import { genid } from "../utils";
+import styled from "styled-components";
+
+const LGRLink = styled.div`
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
 
 const Landing = ({
   loadLGR,
@@ -49,20 +61,35 @@ const Landing = ({
         overflow: "hidden",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: "column",
       }}
     >
-      <div>
+      {appState.lgrs.length < 1 && (
+        <div
+          style={{
+            fontSize: "3rem",
+            opacity: 0.2,
+          }}
+        >
+          Drag and drop LGR files here
+        </div>
+      )}
+      <div style={{ minWidth: 400 }}>
         {appState.lgrs.map((lgr) => (
-          <div
+          <LGRLink
             key={lgr.id}
             onClick={() => {
               selectLGR(lgr.id);
             }}
           >
             <div>{lgr.name}</div>
-            <div>{lgr.modified.toLocaleString()}</div>
-          </div>
+          </LGRLink>
         ))}
+        {appState.lgrs.length > 0 && (
+          <div style={{ opacity: 0.5, textAlign: "right", padding: 4 }}>
+            Drag and drop more LGR files
+          </div>
+        )}
       </div>
     </div>
   );
