@@ -48,6 +48,21 @@ function App() {
     });
   };
 
+  const deletePicture = (name: string) => {
+    setAppState((state) => {
+      const lgr = getSelectedLGR();
+      if (lgr) {
+        lgr.data.pictureData = lgr.data.pictureData.filter(
+          (p) => p.name !== name
+        );
+        lgr.data.pictureList = lgr.data.pictureList.filter(
+          (p) => p.name !== name
+        );
+      }
+      return { ...state, selectedImage: "" };
+    });
+  };
+
   const getLGRPalette = (lgr?: LGRFile) => {
     if (!lgr) return;
 
@@ -190,6 +205,7 @@ function App() {
               data={pcx}
               setPictureData={setPictureData}
               selectPicture={selectPicture}
+              deletePicture={deletePicture}
             />
           )}
         </View>

@@ -24,10 +24,12 @@ const PCXEditor = ({
   data,
   setPictureData,
   selectPicture,
+  deletePicture,
 }: {
   data: PCXData;
   setPictureData: (name: string, data: Buffer) => void;
   selectPicture: (name: string) => void;
+  deletePicture: (name: string) => void;
 }) => {
   const container = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -132,6 +134,13 @@ const PCXEditor = ({
           }}
         >
           Export
+        </Button>
+        <Button
+          onClick={() => {
+            deletePicture(data.filename);
+          }}
+        >
+          Delete
         </Button>
         <Button
           style={{ marginLeft: "auto", padding: "0 14px" }}
