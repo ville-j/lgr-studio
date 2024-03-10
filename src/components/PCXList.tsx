@@ -21,11 +21,11 @@ const ListItem = styled.div<{ selected: boolean }>`
 
 const PCXList = ({
   pcxData,
-  selectImage,
+  selectPicture,
   appState,
 }: {
   pcxData: PictureData[];
-  selectImage: (id: string) => void;
+  selectPicture: (name: string) => void;
   appState: AppState;
 }) => {
   return (
@@ -37,11 +37,11 @@ const PCXList = ({
           key={pcx.name}
           onClick={(e) => {
             e.currentTarget.focus();
-            selectImage(pcx.name);
+            selectPicture(pcx.name);
           }}
           onKeyUp={(e) => {
             if (e.key === "Enter") {
-              selectImage(pcx.name);
+              selectPicture(pcx.name);
             }
           }}
           selected={appState.selectedImage === pcx.name}

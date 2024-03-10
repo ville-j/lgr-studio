@@ -19,7 +19,7 @@ const PCXThumbnail = ({ pictureData }: { pictureData: PictureData }) => {
         context.putImageData(imageData, 0, 0);
       }
     }
-  }, [pictureData]);
+  }, [pictureData.data]);
 
   return (
     <div

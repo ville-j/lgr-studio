@@ -29,12 +29,24 @@ function App() {
     setAppState((state) => ({ ...state, selectedLgr: id }));
   };
 
-  const selectImage = (id: string) => {
-    setAppState((state) => ({ ...state, selectedImage: id }));
+  const selectPicture = (name: string) => {
+    setAppState((state) => ({ ...state, selectedImage: name }));
   };
 
   const getSelectedLGR = () =>
     appState.lgrs.find((lgr) => lgr.id === appState.selectedLgr);
+
+  const setPictureData = (name: string, data: Buffer) => {
+    setAppState((state) => {
+      const lgr = getSelectedLGR();
+      const picture = lgr?.data.pictureData.find((p) => p.name === name);
+
+      if (picture) {
+        picture.data = data;
+      }
+      return { ...state };
+    });
+  };
 
   const getLGRPalette = (lgr?: LGRFile) => {
     if (!lgr) return;
@@ -63,7 +75,7 @@ function App() {
         }}
         onClick={() => {
           selectLGR("");
-          selectImage("");
+          selectPicture("");
         }}
       >
         <span>LGR</span> <span style={{ color: "#fff" }}>Studio</span>
@@ -166,13 +178,21 @@ function App() {
             {lgr && (
               <PCXList
                 pcxData={lgr.data.pictureData}
-                selectImage={selectImage}
+                selectPicture={selectPicture}
                 appState={appState}
               />
             )}
           </Panel>
         </SideBar>
-        <View>{pcx && <PCXEditor data={pcx} />}</View>
+        <View>
+          {pcx && (
+            <PCXEditor
+              data={pcx}
+              setPictureData={setPictureData}
+              selectPicture={selectPicture}
+            />
+          )}
+        </View>
       </Content>
     </Main>
   );

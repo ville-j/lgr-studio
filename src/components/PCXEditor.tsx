@@ -3,6 +3,8 @@ import { PCXData } from "../types";
 import { downloadData, imageDataToImage } from "../utils";
 import styled from "styled-components";
 import Button from "./Button";
+import { useDragAndDrop } from "../hooks";
+import { Buffer } from "buffer";
 
 const ToolBar = styled.div`
   display: flex;
@@ -18,7 +20,15 @@ const ToolBar = styled.div`
 
 const scale = 1;
 
-const PCXEditor = ({ data }: { data: PCXData }) => {
+const PCXEditor = ({
+  data,
+  setPictureData,
+  selectPicture,
+}: {
+  data: PCXData;
+  setPictureData: (name: string, data: Buffer) => void;
+  selectPicture: (name: string) => void;
+}) => {
   const container = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const context = useRef<CanvasRenderingContext2D | null>(null);
@@ -53,6 +63,23 @@ const PCXEditor = ({ data }: { data: PCXData }) => {
     context.current.drawImage(picture, Math.round(x), Math.round(y));
     context.current.restore();
   };
+
+  useDragAndDrop(
+    (files) => {
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          if (event.target?.result) {
+            const buff = Buffer.from(event.target?.result as ArrayBuffer);
+            setPictureData(data.filename, buff);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    },
+    container,
+    ["pcx"]
+  );
 
   useLayoutEffect(() => {
     initialise();
@@ -105,6 +132,14 @@ const PCXEditor = ({ data }: { data: PCXData }) => {
           }}
         >
           Export
+        </Button>
+        <Button
+          style={{ marginLeft: "auto", padding: "0 14px" }}
+          onClick={() => {
+            selectPicture("");
+          }}
+        >
+          ×
         </Button>
       </ToolBar>
       <div ref={container} style={{ flex: 1, overflow: "hidden" }}>
