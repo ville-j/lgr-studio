@@ -1,4 +1,4 @@
-import { LGR } from "elmajs";
+import { Clip, PictureType, Transparency } from "elmajs";
 
 export interface PCXHeader {
   bitplanes: number;
@@ -14,6 +14,19 @@ export interface PCXHeader {
   ymax: number;
   ymin: number;
 }
+
+export interface IPCX {
+  buffer: Uint8Array;
+  byteView: Uint8Array;
+  header: PCXHeader;
+  width: number;
+  height: number;
+  palette: Uint8Array;
+  pixels: Uint8Array;
+  planes: number;
+  decode: () => PCXData;
+}
+
 export interface PCXData {
   header: PCXHeader;
   height: number;
@@ -29,12 +42,30 @@ export interface LGRFile {
   name: string;
   comment: string;
   file: File;
-  data: LGR;
+  data: LGRData;
   modified: Date;
+}
+
+export interface LGRPictureData {
+  name: string;
+  data: Buffer;
+}
+
+export interface LGRPictureDeclaration {
+  name: string;
+  pictureType: PictureType;
+  distance: number;
+  clipping: Clip;
+  transparency: Transparency;
+}
+
+export interface LGRData {
+  pictureData: LGRPictureData[];
+  pictureList: LGRPictureDeclaration[];
 }
 
 export interface AppState {
   lgrs: LGRFile[];
   selectedLgr: string;
-  selectedImage: string;
+  selectedPicture: string;
 }

@@ -2,7 +2,7 @@ import { LGR } from "elmajs";
 import { useDragAndDrop } from "../hooks";
 import { Buffer } from "buffer/";
 import { useRef } from "react";
-import { AppState, LGRFile } from "../types";
+import { AppState, LGRData, LGRFile } from "../types";
 import { genid } from "../utils";
 import styled from "styled-components";
 
@@ -36,12 +36,27 @@ const Landing = ({
             const lgr = LGR.from(
               Buffer.from(event.target?.result as ArrayBuffer)
             );
+
+            const lgrData: LGRData = {
+              pictureData: lgr.pictureData.map((pd) => ({
+                name: pd.name,
+                data: pd.data,
+              })),
+              pictureList: lgr.pictureList.map((pl) => ({
+                name: pl.name,
+                pictureType: pl.pictureType,
+                distance: pl.distance,
+                clipping: pl.clipping,
+                transparency: pl.transparency,
+              })),
+            };
+
             loadLGR({
               id: genid(),
               file: file,
               name: file.name,
               comment: "",
-              data: lgr,
+              data: lgrData,
               modified: new Date(),
             });
           }

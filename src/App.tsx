@@ -2,7 +2,7 @@ import "./App.css";
 import Panel from "./components/Panel";
 import Main, { Content, SideBar, TopBar, View } from "./layouts/Main";
 import { useMemo, useState } from "react";
-import { AppState, LGRFile, PCXData } from "./types.js";
+import { AppState, IPCX, LGRFile, PCXData } from "./types.js";
 import Palette from "./components/Palette.js";
 import { downloadData } from "./utils.js";
 import PCXList from "./components/PCXList.js";
@@ -11,55 +11,106 @@ import Landing from "./layouts/Landing.js";
 import PCX from "pcx-js";
 import PCXEditor from "./components/PCXEditor.js";
 import Button from "./components/Button.js";
+import { Clip, LGR, PictureType, Transparency } from "elmajs";
+import { Buffer } from "buffer";
 
 const initialState: AppState = {
   lgrs: [],
   selectedLgr: "",
-  selectedImage: "",
+  selectedPicture: "",
 };
 
 function App() {
   const [appState, setAppState] = useState(initialState);
 
   const loadLGR = (lgr: LGRFile) => {
-    setAppState((state) => ({ ...state, lgrs: [...state.lgrs, lgr] }));
+    setAppState(
+      (state): AppState => ({ ...state, lgrs: [...state.lgrs, lgr] })
+    );
   };
 
   const selectLGR = (id: string) => {
-    setAppState((state) => ({ ...state, selectedLgr: id }));
+    setAppState((state): AppState => ({ ...state, selectedLgr: id }));
   };
 
   const selectPicture = (name: string) => {
-    setAppState((state) => ({ ...state, selectedImage: name }));
+    setAppState((state): AppState => ({ ...state, selectedPicture: name }));
   };
 
   const getSelectedLGR = () =>
     appState.lgrs.find((lgr) => lgr.id === appState.selectedLgr);
 
   const setPictureData = (name: string, data: Buffer) => {
-    setAppState((state) => {
-      const lgr = getSelectedLGR();
-      const picture = lgr?.data.pictureData.find((p) => p.name === name);
-
-      if (picture) {
-        picture.data = data;
-      }
-      return { ...state };
+    setAppState((state): AppState => {
+      return {
+        ...state,
+        lgrs: state.lgrs.map((lgr) => {
+          return lgr.id === state.selectedLgr
+            ? {
+                ...lgr,
+                data: {
+                  ...lgr.data,
+                  pictureData: lgr.data.pictureData.map((p) => {
+                    return p.name === name ? { ...p, data } : p;
+                  }),
+                },
+              }
+            : lgr;
+        }),
+      };
     });
   };
 
   const deletePicture = (name: string) => {
-    setAppState((state) => {
-      const lgr = getSelectedLGR();
-      if (lgr) {
-        lgr.data.pictureData = lgr.data.pictureData.filter(
-          (p) => p.name !== name
-        );
-        lgr.data.pictureList = lgr.data.pictureList.filter(
-          (p) => p.name !== name
-        );
-      }
-      return { ...state, selectedImage: "" };
+    setAppState((state): AppState => {
+      return {
+        ...state,
+        selectedPicture: "",
+        lgrs: state.lgrs.map((lgr) => {
+          return lgr.id === state.selectedLgr
+            ? {
+                ...lgr,
+                data: {
+                  pictureData: lgr.data.pictureData.filter(
+                    (p) => p.name !== name
+                  ),
+                  pictureList: lgr.data.pictureList.filter(
+                    (p) => p.name !== name
+                  ),
+                },
+              }
+            : lgr;
+        }),
+      };
+    });
+  };
+
+  const createPicture = (data: Buffer, name: string) => {
+    setAppState((state): AppState => {
+      return {
+        ...state,
+        selectedPicture: name,
+        lgrs: state.lgrs.map((lgr) => {
+          return lgr.id === state.selectedLgr
+            ? {
+                ...lgr,
+                data: {
+                  pictureData: [...lgr.data.pictureData, { data, name }],
+                  pictureList: [
+                    ...lgr.data.pictureList,
+                    {
+                      name,
+                      pictureType: PictureType.Normal,
+                      distance: 400,
+                      clipping: Clip.Sky,
+                      transparency: Transparency.TopLeft,
+                    },
+                  ],
+                },
+              }
+            : lgr;
+        }),
+      };
     });
   };
 
@@ -108,7 +159,10 @@ function App() {
           </div>
           <Button
             onClick={() => {
-              const buffer = lgr.data.toBuffer();
+              const file = new LGR();
+              file.pictureData = lgr.data.pictureData;
+              file.pictureList = lgr.data.pictureList;
+              const buffer = file.toBuffer();
               downloadData(buffer, lgr.name);
             }}
             style={{
@@ -150,20 +204,43 @@ function App() {
   }
 
   const picture = lgr.data.pictureData.find(
-    (p) => p.name === appState.selectedImage
+    (p) => p.name === appState.selectedPicture
   );
 
-  if (appState.selectedImage && !picture) return <div>404</div>;
+  if (appState.selectedPicture && !picture) return <div>404</div>;
 
-  const data = picture ? new PCX(picture.data) : null;
+  const data = picture
+    ? ((): IPCX | undefined => {
+        try {
+          return new PCX(picture.data);
+        } catch (err) {
+          console.log(err);
+        }
+      })()
+    : undefined;
+
   const pcx =
     data && picture
-      ? ({
-          ...data.decode(),
-          rawData: picture.data,
-          filename: picture.name,
-        } as PCXData)
-      : null;
+      ? ((): PCXData | undefined => {
+          try {
+            return {
+              ...(data.buffer.length > 0
+                ? data.decode()
+                : {
+                    header: data.header,
+                    height: 0,
+                    width: 0,
+                    palette: new Uint8Array(),
+                    pixelArray: new Uint8Array(),
+                  }),
+              rawData: picture.data,
+              filename: picture.name,
+            };
+          } catch (err) {
+            console.log(err);
+          }
+        })()
+      : undefined;
 
   return (
     <Main>
@@ -174,8 +251,8 @@ function App() {
             {palette && <Palette palette={palette}></Palette>}
           </Panel>
           <Panel title="Picture palette" height={300}>
-            {pcx ? (
-              <Palette palette={pcx?.palette}></Palette>
+            {pcx?.palette ? (
+              <Palette palette={pcx.palette}></Palette>
             ) : (
               <div
                 style={{
@@ -189,7 +266,23 @@ function App() {
               </div>
             )}
           </Panel>
-          <Panel title="Pictures" open>
+          <Panel
+            title="Pictures"
+            buttons={[
+              <Button
+                key="createImage"
+                style={{ padding: 14 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("create picture");
+                  createPicture(Buffer.from([]), "test.pcx");
+                }}
+              >
+                +
+              </Button>,
+            ]}
+            open
+          >
             {lgr && (
               <PCXList
                 pcxData={lgr.data.pictureData}

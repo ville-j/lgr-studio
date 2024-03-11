@@ -49,16 +49,20 @@ const PCXEditor = ({
     context.current.imageSmoothingEnabled = false;
   };
 
+  const clearCanvas = () => {
+    if (canvas.current && context.current) {
+      context.current.clearRect(
+        0,
+        0,
+        canvas.current.width,
+        canvas.current.height
+      );
+    }
+  };
+
   const draw = (picture: HTMLImageElement, x = 0, y = 0) => {
     if (!picture || !canvas.current || !context.current)
       throw new Error("no canvas found");
-
-    context.current.clearRect(
-      0,
-      0,
-      canvas.current.width,
-      canvas.current.height
-    );
 
     context.current.save();
     context.current.scale(scale, scale);
@@ -92,6 +96,7 @@ const PCXEditor = ({
       initialise();
 
       if (image.current) {
+        clearCanvas();
         draw(image.current, offset.current.x, offset.current.y);
       }
     };
@@ -102,18 +107,30 @@ const PCXEditor = ({
   });
 
   useLayoutEffect(() => {
-    // create image from pcx data
-    const imgdata = context.current?.createImageData(data.width, data.height);
-    if (imgdata) {
-      imgdata.data.set(data.pixelArray);
-      imageDataToImage(imgdata).then((val) => {
-        image.current = val;
-        offset.current = {
-          x: ((canvas.current?.width ?? 0) * 0.5) / scale - val.width / 2,
-          y: ((canvas.current?.height ?? 0) * 0.5) / scale - val.height / 2,
-        };
-        draw(val, offset.current.x, offset.current.y);
-      });
+    try {
+      if (data.pixelArray.length > 0) {
+        // create image from pcx data
+        const imgdata = context.current?.createImageData(
+          data.width,
+          data.height
+        );
+        if (imgdata) {
+          imgdata.data.set(data.pixelArray);
+          imageDataToImage(imgdata).then((val) => {
+            image.current = val;
+            offset.current = {
+              x: ((canvas.current?.width ?? 0) * 0.5) / scale - val.width / 2,
+              y: ((canvas.current?.height ?? 0) * 0.5) / scale - val.height / 2,
+            };
+            clearCanvas();
+            draw(val, offset.current.x, offset.current.y);
+          });
+        }
+      } else {
+        clearCanvas();
+      }
+    } catch (err) {
+      console.log(err);
     }
   }, [data]);
 

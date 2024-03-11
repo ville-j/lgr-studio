@@ -8,15 +8,19 @@ const PCXThumbnail = ({ pictureData }: { pictureData: PictureData }) => {
 
   useLayoutEffect(() => {
     if (canvas.current) {
-      const pcxO = new PCX(pictureData.data);
-      const pcx = pcxO.decode();
-      canvas.current.width = pcx.width;
-      canvas.current.height = pcx.height;
-      const context = canvas.current.getContext("2d");
-      if (context) {
-        const imageData = context.createImageData(pcx.width, pcx.height);
-        imageData.data.set(pcx.pixelArray);
-        context.putImageData(imageData, 0, 0);
+      try {
+        const pcxO = new PCX(pictureData.data);
+        const pcx = pcxO.decode();
+        canvas.current.width = pcx.width;
+        canvas.current.height = pcx.height;
+        const context = canvas.current.getContext("2d");
+        if (context) {
+          const imageData = context.createImageData(pcx.width, pcx.height);
+          imageData.data.set(pcx.pixelArray);
+          context.putImageData(imageData, 0, 0);
+        }
+      } catch (err) {
+        console.log(err);
       }
     }
   }, [pictureData.data]);

@@ -44,7 +44,7 @@ const PCXList = ({
               selectPicture(pcx.name);
             }
           }}
-          selected={appState.selectedImage === pcx.name}
+          selected={appState.selectedPicture === pcx.name}
         >
           <PCXThumbnail pictureData={pcx} />
           <div style={{ padding: "4px 8px" }}>{pcx.name}</div>
