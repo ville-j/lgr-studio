@@ -31,7 +31,7 @@ const Panel = ({
           background: "#151418",
           color: "#d3d3d3",
           display: "flex",
-          borderBottom: "1px solid #070708",
+          borderBottom: "1px solid #070707",
           alignItems: "stretch",
         }}
         onClick={() => {

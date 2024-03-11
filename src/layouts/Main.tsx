@@ -24,7 +24,7 @@ export const TopBar = ({
     style={{
       height: 50,
       display: "flex",
-      background: "#070708",
+      background: "#070707",
       alignItems: "stretch",
       ...style,
     }}
@@ -45,7 +45,7 @@ export const SideBar = ({ children }: { children?: React.ReactNode }) => (
       display: "flex",
       flexDirection: "column",
       background: "#19181d",
-      borderRight: "1px solid #070708",
+      borderRight: "1px solid #070707",
     }}
   >
     {children}

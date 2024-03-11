@@ -35,6 +35,7 @@ export interface PCXData {
   pixelArray: Uint8Array;
   rawData: Uint8Array;
   filename: string;
+  pictureDeclaration?: LGRPictureDeclaration;
 }
 
 export interface LGRFile {

@@ -2,7 +2,13 @@ import "./App.css";
 import Panel from "./components/Panel";
 import Main, { Content, SideBar, TopBar, View } from "./layouts/Main";
 import { useMemo, useState } from "react";
-import { AppState, IPCX, LGRFile, PCXData } from "./types.js";
+import {
+  AppState,
+  IPCX,
+  LGRFile,
+  LGRPictureDeclaration,
+  PCXData,
+} from "./types.js";
 import Palette from "./components/Palette.js";
 import { downloadData } from "./utils.js";
 import PCXList from "./components/PCXList.js";
@@ -61,6 +67,61 @@ function App() {
     });
   };
 
+  const setPictureDeclaration = (
+    name: string,
+    pictureDeclaration: LGRPictureDeclaration
+  ) => {
+    setAppState((state): AppState => {
+      return {
+        ...state,
+        lgrs: state.lgrs.map((lgr) => {
+          return lgr.id === state.selectedLgr
+            ? {
+                ...lgr,
+                data: {
+                  ...lgr.data,
+                  pictureList: lgr.data.pictureList.map((p) => {
+                    return p.name === name ? pictureDeclaration : p;
+                  }),
+                },
+              }
+            : lgr;
+        }),
+      };
+    });
+  };
+
+  const renamePicture = (name: string, newName: string) => {
+    const lgr = getSelectedLGR();
+    if (lgr?.data.pictureData.some((p) => p.name === `${newName}.pcx`)) {
+      return;
+    }
+    setAppState((state): AppState => {
+      return {
+        ...state,
+        selectedPicture: `${newName}.pcx`,
+        lgrs: state.lgrs.map((lgr) => {
+          return lgr.id === state.selectedLgr
+            ? {
+                ...lgr,
+                data: {
+                  ...lgr.data,
+                  pictureList: lgr.data.pictureList.map((p) => {
+                    return p.name === name ? { ...p, name: newName } : p;
+                  }),
+                  pictureData: lgr.data.pictureData.map((p) => {
+                    return p.name === `${name}.pcx`
+                      ? { ...p, name: `${newName}.pcx` }
+                      : p;
+                  }),
+                },
+              }
+            : lgr;
+        }),
+      };
+    });
+  };
+
   const deletePicture = (name: string) => {
     setAppState((state): AppState => {
       return {
@@ -72,7 +133,7 @@ function App() {
                 ...lgr,
                 data: {
                   pictureData: lgr.data.pictureData.filter(
-                    (p) => p.name !== name
+                    (p) => p.name !== `${name}.pcx`
                   ),
                   pictureList: lgr.data.pictureList.filter(
                     (p) => p.name !== name
@@ -86,16 +147,23 @@ function App() {
   };
 
   const createPicture = (data: Buffer, name: string) => {
+    const lgr = getSelectedLGR();
+    while (lgr?.data.pictureData.some((p) => p.name === `${name}.pcx`)) {
+      name = name + 1;
+    }
     setAppState((state): AppState => {
       return {
         ...state,
-        selectedPicture: name,
+        selectedPicture: `${name}.pcx`,
         lgrs: state.lgrs.map((lgr) => {
           return lgr.id === state.selectedLgr
             ? {
                 ...lgr,
                 data: {
-                  pictureData: [...lgr.data.pictureData, { data, name }],
+                  pictureData: [
+                    ...lgr.data.pictureData,
+                    { data, name: `${name}.pcx` },
+                  ],
                   pictureList: [
                     ...lgr.data.pictureList,
                     {
@@ -235,6 +303,9 @@ function App() {
                   }),
               rawData: picture.data,
               filename: picture.name,
+              pictureDeclaration: lgr.data.pictureList.find((p) => {
+                return `${p.name}.pcx` === picture.name;
+              }),
             };
           } catch (err) {
             console.log(err);
@@ -275,7 +346,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log("create picture");
-                  createPicture(Buffer.from([]), "test.pcx");
+                  createPicture(Buffer.from([]), "unnamed");
                 }}
               >
                 +
@@ -299,6 +370,8 @@ function App() {
               setPictureData={setPictureData}
               selectPicture={selectPicture}
               deletePicture={deletePicture}
+              setPictureDeclaration={setPictureDeclaration}
+              renamePicture={renamePicture}
             />
           )}
         </View>
